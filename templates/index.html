@@ -88,40 +88,60 @@ button {
 const canvas = document.getElementById("chart");
 const ctx = canvas.getContext("2d");
 
-canvas.width = window.innerWidth * 0.65;
-canvas.height = window.innerHeight;
+// Responsive canvas
+function resizeCanvas() {
+    canvas.width = window.innerWidth * 0.65;
+    canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
 
 let candles = [];
-let lastPrice = 60000;
+let lastPrice = 100;
 
 // Generate initial candles
-for (let i = 0; i < 40; i++) {
+for (let i = 0; i < 50; i++) {
     const open = lastPrice;
-    const close = open + (Math.random() - 0.5) * 800;
-    const high = Math.max(open, close) + Math.random() * 300;
-    const low = Math.min(open, close) - Math.random() * 300;
+    const close = open + (Math.random() - 0.5) * 10;
+    const high = Math.max(open, close) + Math.random() * 5;
+    const low = Math.min(open, close) - Math.random() * 5;
 
     candles.push({ open, close, high, low });
     lastPrice = close;
 }
 
-// Draw chart
+// 🔥 Get dynamic min/max
+function getBounds() {
+    let min = Infinity;
+    let max = -Infinity;
+
+    candles.forEach(c => {
+        if (c.low < min) min = c.low;
+        if (c.high > max) max = c.high;
+    });
+
+    return { min, max };
+}
+
+// 📊 Draw candles
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const candleWidth = 10;
-    const gap = 5;
-    const baseY = canvas.height / 2;
+    const { min, max } = getBounds();
+    const range = max - min;
+
+    const candleWidth = 8;
+    const gap = 4;
 
     candles.forEach((candle, i) => {
         const x = i * (candleWidth + gap) + 50;
 
-        const scale = 0.01;
+        const scale = canvas.height / range;
 
-        const openY = baseY - candle.open * scale;
-        const closeY = baseY - candle.close * scale;
-        const highY = baseY - candle.high * scale;
-        const lowY = baseY - candle.low * scale;
+        const openY = canvas.height - (candle.open - min) * scale;
+        const closeY = canvas.height - (candle.close - min) * scale;
+        const highY = canvas.height - (candle.high - min) * scale;
+        const lowY = canvas.height - (candle.low - min) * scale;
 
         const isGreen = candle.close > candle.open;
 
@@ -139,57 +159,30 @@ function draw() {
             x,
             Math.min(openY, closeY),
             candleWidth,
-            Math.abs(openY - closeY)
+            Math.abs(openY - closeY) || 1
         );
     });
 }
 
-// Animate new candles
+// 🔥 Animate candles
 setInterval(() => {
     const last = candles[candles.length - 1];
 
     const open = last.close;
-    const close = open + (Math.random() - 0.5) * 600;
-    const high = Math.max(open, close) + Math.random() * 200;
-    const low = Math.min(open, close) - Math.random() * 200;
+    const close = open + (Math.random() - 0.5) * 10;
+    const high = Math.max(open, close) + Math.random() * 5;
+    const low = Math.min(open, close) - Math.random() * 5;
 
     candles.push({ open, close, high, low });
 
-    if (candles.length > 50) candles.shift();
+    if (candles.length > 60) candles.shift();
 
     draw();
-}, 1000);
+}, 800);
 
 // Initial draw
 draw();
-
-// Form handling
-const form = document.getElementById("orderForm");
-const resultBox = document.getElementById("result");
-
-form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const formData = new FormData(form);
-
-    const res = await fetch("/order", {
-        method: "POST",
-        body: formData
-    });
-
-    const data = await res.json();
-
-    resultBox.style.display = "block";
-
-    if (data.status === "success") {
-        resultBox.className = "result success";
-        resultBox.innerHTML = `✅ Order placed ID: ${data.data.orderId}`;
-    } else {
-        resultBox.className = "result error";
-        resultBox.innerHTML = `❌ ${data.message}`;
-    }
-});
 </script>
-
+    
 </body>
 </html>
