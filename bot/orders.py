@@ -5,7 +5,7 @@ client = get_client()
 
 def place_market_order(symbol, side, quantity):
     try:
-        order = client.futures_create_order(
+        order = client.create_order(
             symbol=symbol.upper(),
             side=side.upper(),
             type="MARKET",
@@ -20,12 +20,12 @@ def place_market_order(symbol, side, quantity):
 
 def place_limit_order(symbol, side, quantity, price):
     try:
-        order = client.futures_create_order(
+        order = client.create_order(
             symbol=symbol.upper(),
             side=side.upper(),
             type="LIMIT",
             quantity=quantity,
-            price=price,
+            price=str(price),
             timeInForce="GTC"
         )
         logging.info(f"LIMIT ORDER: {order}")
