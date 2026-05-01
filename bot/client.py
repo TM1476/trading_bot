@@ -8,7 +8,10 @@ def get_client():
     print("API KEY:", api_key)
     print("SECRET:", api_secret)
 
+    # 👇 DO NOT crash app
     if not api_key or not api_secret:
-        raise Exception("API keys not found!")
+        print("⚠️ API keys missing → running in DEMO mode")
+        return None
 
     return Client(api_key, api_secret)
+    
