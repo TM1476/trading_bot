@@ -12,7 +12,7 @@ def home():
 
 
 @app.route("/order", methods=["POST"])
-def create_order():
+def order():
     data = request.form
 
     symbol = data.get("symbol")
@@ -27,22 +27,15 @@ def create_order():
     try:
         validate_input(symbol, side, order_type, quantity, price)
 
-        if order_type.upper() == "MARKET":
-            order = place_market_order(symbol, side, quantity)
+        if order_type == "MARKET":
+            result = place_market_order(symbol, side, quantity)
         else:
-            order = place_limit_order(symbol, side, quantity, price)
+            result = place_limit_order(symbol, side, quantity, price)
 
-        return jsonify({
-            "status": "success",
-            "orderId": order.get("orderId"),
-            "executedQty": order.get("executedQty")
-        })
+        return jsonify({"status": "success", "data": result})
 
     except Exception as e:
-        return jsonify({
-            "status": "error",
-            "message": str(e)
-        })
+        return jsonify({"status": "error", "message": str(e)})
 
 
 if __name__ == "__main__":
